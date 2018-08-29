@@ -3,13 +3,37 @@ import uuid
 from flask import Flask, Response, jsonify
 from typeguard import typechecked
 
-from uaena.block_chain import BlockChain
+from uaena.block_chain import MINING_REWARD, MINING_REWARD_SENDER, BlockChain
 
 app = Flask(__name__)
 
 node_identifier = str(uuid.uuid4()).replace('-', '')
 
 block_chain = BlockChain()
+
+
+@app.route('/mine/')
+@typechecked
+def mine() -> Response:
+    last_block = block_chain.last_block
+    last_proof = last_block.proof
+    proof = block_chain.proof_of_work(last_proof)
+
+    block_chain.new_transaction(
+        sender=MINING_REWARD_SENDER,
+        recipient=node_identifier,
+        amount=MINING_REWARD,
+    )
+
+    previous_hash = last_block.hash
+    block = block_chain.new_block(proof, previous_hash)
+
+    response = {
+        'message': 'New Block Forged',
+        **block.serialize(),
+    }
+
+    return jsonify(response)
 
 
 @app.route('/chain/')
