@@ -1,6 +1,7 @@
 import dataclasses
 import decimal
 import itertools
+import hashlib
 import time
 import typing
 
@@ -11,6 +12,7 @@ from .transaction import Transaction
 
 MINING_REWARD_SENDER = bytes.fromhex('00000000000000000000000000000000')
 MINING_REWARD = decimal.Decimal('1')
+DIFFICULTY = 4
 
 
 @dataclasses.dataclass
@@ -100,3 +102,28 @@ class BlockChain:
                 f'Sender {transaction.sender.hex()} does not have '
                 f'sufficient balance: {transaction.amount} (have {balance})'
             )
+
+    @staticmethod
+    @typechecked
+    def valid_proof(last_proof: int, proof: int) -> bool:
+        """Validates the Proof:
+        Does hash(last_proof, proof) contain 4 leading zeroes?
+
+        """
+        guess = f'{last_proof}{proof}'.encode()
+        guess_hash = hashlib.sha256(guess).hexdigest()
+        return guess_hash[:DIFFICULTY] == '0000'
+
+    @staticmethod
+    @typechecked
+    def proof_of_work(last_proof: int) -> int:
+        """Simple Proof of Work Algorithm:
+        - Find a number p' such that hash(pp') contains leading 4 zeroes,
+          where p is the previous p'
+        - p is the previous proof, and p' is the new proof
+
+        """
+        proof = 0
+        while not BlockChain.valid_proof(last_proof, proof):
+            proof += 1
+        return proof

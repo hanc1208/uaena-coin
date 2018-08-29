@@ -126,3 +126,15 @@ def test_block_chain_valid_transaction(fx_block_chain: BlockChain):
         'Sender a9596e7414064c778bdc36b76bb2dc2c '
         'does not have sufficient balance: 10000000 (have 0.25)'
     )
+
+
+@typechecked
+def test_block_chain_valid_proof():
+    assert not BlockChain.valid_proof(1234, 62593)
+    assert BlockChain.valid_proof(1234, 62594)
+    assert not BlockChain.valid_proof(1234, 62595)
+
+
+@typechecked
+def test_block_chain_proof_of_work():
+    assert True
