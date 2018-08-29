@@ -1,4 +1,5 @@
 import dataclasses
+import datetime
 import decimal
 import itertools
 import hashlib
@@ -133,3 +134,46 @@ class BlockChain:
         while not BlockChain.valid_proof(last_proof, proof):
             proof += 1
         return proof
+
+    @staticmethod
+    @typechecked
+    def valid_chain(chain: typing.List[Block]) -> bool:
+        """Determine if a given BlockChain is valid"""
+        block_chain = BlockChain(chain=chain)
+        last_block = chain[0]
+        current_index = 1
+
+        while current_index < len(chain):
+            block = chain[current_index]
+
+            if block.index - last_block.index != 1:
+                return False
+
+            if block.previous_hash != last_block.hash:
+                return False
+
+            timestamp_difference = block.timestamp - last_block.timestamp
+            if not (0 < timestamp_difference < 2 * 60 * 60 * 1000):
+                return False
+
+            if not BlockChain.valid_proof(last_block.proof, block.proof):
+                return False
+
+            mining_reward_valid = False
+            for transaction in block.transactions:
+                if transaction.sender == MINING_REWARD_SENDER:
+                    if mining_reward_valid:
+                        return False
+                    if transaction.amount != MINING_REWARD:
+                        return False
+                    mining_reward_valid = True
+                else:
+                    if not BlockChain.valid_transaction(
+                        block_chain, transaction
+                    ):
+                        return False
+
+            last_block = block
+            current_index += 1
+
+        return True
