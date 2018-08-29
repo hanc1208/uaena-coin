@@ -74,5 +74,25 @@ def full_chain() -> Response:
     return jsonify(response)
 
 
+@app.route('/nodes/register/', methods=['POST'])
+@typechecked
+def register_nodes() -> typing.Tuple[typing.Union[Response, str], int]:
+    values = request.get_json()
+
+    nodes = values.get('nodes')
+    if nodes is None:
+        return 'Error: Please supply a valid list of nodes.', 400
+
+    for node in nodes:
+        block_chain.register_node(node)
+
+    response = {
+        'message': 'New nodes have been added',
+        'total_nodes': list(block_chain.nodes),
+    }
+
+    return jsonify(response), 201
+
+
 if __name__ == '__main__':
     app.run()
