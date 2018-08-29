@@ -1,6 +1,8 @@
+import decimal
+import typing
 import uuid
 
-from flask import Flask, Response, jsonify
+from flask import Flask, Response, jsonify, request
 from typeguard import typechecked
 
 from uaena.block_chain import MINING_REWARD, MINING_REWARD_SENDER, BlockChain
@@ -34,6 +36,32 @@ def mine() -> Response:
     }
 
     return jsonify(response)
+
+
+@app.route('/transactions/new/', methods=['POST'])
+@typechecked
+def new_transaction() -> typing.Tuple[typing.Union[Response, str], int]:
+    values = request.get_json()
+
+    required = ['sender', 'recipient', 'amount']
+    for key in required:
+        return f'{key} is required', 400
+
+    sender = values['sender']
+    recipient = values['recipient']
+
+    try:
+        amount = decimal.Decimal(values['amount'])
+    except TypeError:
+        return f'{values["amount"]} cannot be converted to decimal', 400
+
+    index = block_chain.new_transaction(sender, recipient, amount)
+
+    response = {
+        'message': f'Transaction will be added to Block {index}',
+    }
+
+    return jsonify(response), 201
 
 
 @app.route('/chain/')
