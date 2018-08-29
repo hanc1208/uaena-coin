@@ -5,6 +5,7 @@ from pytest import fixture
 from typeguard import typechecked
 
 from uaena.block import Block
+from uaena.block_chain import BlockChain
 from uaena.transaction import Transaction
 
 
@@ -47,3 +48,25 @@ def fx_block() -> Block:
         transactions=[block_reward],
     )
     return block
+
+
+@fixture
+@typechecked
+def fx_block_chain(
+    fx_block: Block, fx_transaction: Transaction,
+) -> BlockChain:
+    block_chain = BlockChain(chain=[fx_block])
+    block_chain.append_transaction(fx_transaction)
+    block_chain.create_block(
+        proof=1111,
+        reward_recipient=bytes.fromhex('33ee49f83681417e82660cb9585d13b1'),
+        timestamp=fx_block.timestamp + 15000,  # 1993-05-16T09:18:38.935016
+    )
+    block_chain.append_transaction(
+        Transaction(
+            sender=bytes.fromhex('33ee49f83681417e82660cb9585d13b1'),
+            recipient=bytes.fromhex('a9596e7414064c778bdc36b76bb2dc2c'),
+            amount=decimal.Decimal('0.25'),
+        ),
+    )
+    return block_chain
