@@ -7,6 +7,7 @@ import time
 import typing
 import urllib.parse
 
+from requests import get
 from typeguard import typechecked
 
 from .block import Block
@@ -177,3 +178,32 @@ class BlockChain:
             current_index += 1
 
         return True
+
+    @typechecked
+    def resolve_conflicts(self) -> bool:
+        """This is our Consensus Algorithm, it resolves conflicts
+        by replacing our chain with the longest one in the network.
+
+        """
+        neighbours = self.nodes
+        new_chain = None
+
+        max_length = len(self.chain)
+
+        for node in neighbours:
+            response = get(f'http://{node}/chain/')
+
+            if response.ok:
+                data = response.json()
+                length = data['length']
+                chain = [Block.deserialize(block) for block in data['chain']]
+
+                if length > max_length and BlockChain.valid_chain(chain):
+                    max_length = length
+                    new_chain = chain
+
+        if new_chain:
+            self.chain = new_chain
+            return True
+
+        return False
