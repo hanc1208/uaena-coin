@@ -4,6 +4,7 @@ import decimal
 from pytest import fixture
 from typeguard import typechecked
 
+from uaena.block import Block
 from uaena.transaction import Transaction
 
 
@@ -28,3 +29,21 @@ def fx_transaction() -> Transaction:
         amount=decimal.Decimal('0.5'),
     )
     return transaction
+
+
+@fixture
+@typechecked
+def fx_block() -> Block:
+    block_reward = Transaction(
+        sender=bytes.fromhex('00000000000000000000000000000000'),
+        recipient=bytes.fromhex('5ca60de0575441718094ea0ffcb02aa4'),
+        amount=decimal.Decimal('1'),
+    )
+    block = Block(
+        index=1,
+        timestamp=737511503930,  # 1993-05-16T09:18:23.930516
+        proof=1,
+        previous_hash=bytes.fromhex('0000000000000000000000000000000000000000000000000000000000000000'),  # noqa
+        transactions=[block_reward],
+    )
+    return block
