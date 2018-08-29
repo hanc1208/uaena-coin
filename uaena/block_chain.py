@@ -4,6 +4,7 @@ import itertools
 import hashlib
 import time
 import typing
+import urllib.parse
 
 from typeguard import typechecked
 
@@ -21,6 +22,7 @@ class BlockChain:
     current_transactions: typing.List[Transaction] = dataclasses.field(
         default_factory=list,
     )
+    nodes: typing.Set[str] = dataclasses.field(default_factory=set)
 
     @typechecked
     def balance_of(self, address: bytes) -> decimal.Decimal:
@@ -84,6 +86,10 @@ class BlockChain:
         self.valid_transaction(transaction)
         self.current_transactions.append(transaction)
         return self.last_block.index + 1 if self.last_block else 1
+
+    @typechecked
+    def register_node(self, address: str) -> None:
+        self.nodes.add(urllib.parse.urlparse(address).netloc)
 
     @property
     @typechecked

@@ -96,6 +96,13 @@ def test_block_chain_append_transaction(fx_block_chain: BlockChain):
 
 
 @typechecked
+def test_block_chain_register_node(fx_block_chain: BlockChain):
+    fx_block_chain.register_node('http://node.uaenapool.com/')
+    assert len(fx_block_chain.nodes) == 3
+    assert 'node.uaneapool.com' in fx_block_chain.nodes
+
+
+@typechecked
 def test_block_chain_last_block(fx_block_chain: BlockChain):
     assert fx_block_chain.last_block.index == 2
     assert fx_block_chain.last_block.hash == bytes.fromhex('46e136b65129b85429f25d777cb20c4c44d91ae46e18b6f540c45135d340c2cb')  # noqa

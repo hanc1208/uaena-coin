@@ -55,7 +55,10 @@ def fx_block() -> Block:
 def fx_block_chain(
     fx_block: Block, fx_transaction: Transaction,
 ) -> BlockChain:
-    block_chain = BlockChain(chain=[fx_block])
+    block_chain = BlockChain(
+        chain=[fx_block],
+        nodes={'main.uaena.com', 'sub.uaena.com'},
+    )
     block_chain.append_transaction(fx_transaction)
     block_chain.create_block(
         proof=1111,
