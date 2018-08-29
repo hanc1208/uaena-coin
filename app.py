@@ -94,5 +94,24 @@ def register_nodes() -> typing.Tuple[typing.Union[Response, str], int]:
     return jsonify(response), 201
 
 
+@app.route('/nodes/resolve/')
+@typechecked
+def consensus() -> Response:
+    replaced = block_chain.resolve_conflicts()
+
+    if replaced:
+        response = {
+            'message': 'Our chain was replaced',
+            'new_chain': [block.serialize() for block in block_chain.chain],
+        }
+    else:
+        response = {
+            'message': 'Our chain is authoritative',
+            'chain': [block.serialize() for block in block_chain.chain],
+        }
+
+    return jsonify(response)
+
+
 if __name__ == '__main__':
     app.run()
